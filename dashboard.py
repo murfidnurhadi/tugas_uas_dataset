@@ -3,31 +3,33 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 
-
-
 st.set_page_config(layout="wide", page_title="E-Commerce Dashboard", page_icon="🛒")
 
 # Load Data
 @st.cache_data
 def load_data():
-    # Membaca dataset ke dalam DataFrame
-    customers_df = pd.read_csv('C:/UNIKOM 10123034/UNIKOM 3/Pemrograman Dasar Sains Data/Pertemuan 7/Proses Analisis Dataset/E-commerce-public-dataset/customers_dataset.csv')
-    geolocation_df = pd.read_csv('C:/UNIKOM 10123034/UNIKOM 3/Pemrograman Dasar Sains Data/Pertemuan 7/Proses Analisis Dataset/E-commerce-public-dataset/geolocation_dataset.csv')
-    order_items_df = pd.read_csv('C:/UNIKOM 10123034/UNIKOM 3/Pemrograman Dasar Sains Data/Pertemuan 7/Proses Analisis Dataset/E-commerce-public-dataset/order_items_dataset.csv')
-    order_payments_df = pd.read_csv('C:/UNIKOM 10123034/UNIKOM 3/Pemrograman Dasar Sains Data/Pertemuan 7/Proses Analisis Dataset/E-commerce-public-dataset/order_payments_dataset.csv')
-    order_reviews_df = pd.read_csv('C:/UNIKOM 10123034/UNIKOM 3/Pemrograman Dasar Sains Data/Pertemuan 7/Proses Analisis Dataset/E-commerce-public-dataset/order_reviews_dataset.csv')
-    orders_df = pd.read_csv('C:/UNIKOM 10123034/UNIKOM 3/Pemrograman Dasar Sains Data/Pertemuan 7/Proses Analisis Dataset/E-commerce-public-dataset/orders_dataset.csv')
-    product_translation_df = pd.read_csv('C:/UNIKOM 10123034/UNIKOM 3/Pemrograman Dasar Sains Data/Pertemuan 7/Proses Analisis Dataset/E-commerce-public-dataset/product_category_name_translation.csv')
-    products_df = pd.read_csv('C:/UNIKOM 10123034/UNIKOM 3/Pemrograman Dasar Sains Data/Pertemuan 7/Proses Analisis Dataset/E-commerce-public-dataset/products_dataset.csv')
-    sellers_df = pd.read_csv('C:/UNIKOM 10123034/UNIKOM 3/Pemrograman Dasar Sains Data/Pertemuan 7/Proses Analisis Dataset/E-commerce-public-dataset/sellers_dataset.csv')
-    
-    # Merge data untuk analisis produk terlaris
-    products_df = products_df.merge(product_translation_df, on='product_category_name', how='left')
-    merged_df = order_items_df.merge(orders_df[['order_id', 'order_purchase_timestamp']], on='order_id', how='left')
-    merged_df = merged_df.merge(products_df[['product_id', 'product_category_name_english']], on='product_id', how='left')
-    merged_df['order_purchase_timestamp'] = pd.to_datetime(merged_df['order_purchase_timestamp'])
-    merged_df['year'] = merged_df['order_purchase_timestamp'].dt.year
-    merged_df['month'] = merged_df['order_purchase_timestamp'].dt.month
+    url_base = "https://drive.google.com/uc?id="  # Ganti dengan ID file di Google Drive
+    files = {
+        "customers": "ID_CUSTOMERS",
+        "geolocation": "ID_GEOLOCATION",
+        "order_items": "ID_ORDER_ITEMS",
+        "order_payments": "ID_ORDER_PAYMENTS",
+        "order_reviews": "ID_ORDER_REVIEWS",
+        "orders": "ID_ORDERS",
+        "product_translation": "ID_PRODUCT_TRANSLATION",
+        "products": "ID_PRODUCTS",
+        "sellers": "ID_SELLERS"
+    }
+
+    dataframes = {}
+    for key, file_id in files.items():
+        url = f"{url_base}{file_id}"
+        dataframes[key] = pd.read_csv(url)
+
+    return dataframes
+
+data = load_data()
+st.write(data["customers"].head())  # Contoh menampilkan data customers
     
     # Merge untuk analisis kota
     city_df = orders_df.merge(customers_df[['customer_id', 'customer_city']], on='customer_id', how='left')
