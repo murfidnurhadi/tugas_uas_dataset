@@ -1,4 +1,5 @@
 import streamlit as st
+import plotly.express as px
 import pandas as pd
 import gdown
 
@@ -94,7 +95,8 @@ with st.sidebar:
     """)
     st.markdown("---")
     st.markdown("## 🗓️ Filter Penjulan")  
-    year_selected = st.sidebar.selectbox("Pilih Tahun", merged_df['year'].unique())
+    year_selected = st.sidebar.selectbox("Pilih Tahun", merged_df['year'].unique() if not merged_df.empty else [None])
+
     st.header("🔍 Filter Lokasi")
     kota_terpilih = st.sidebar.selectbox("Pilih Kota:", ["Semua"] + sorted(geolocation_df["geolocation_city"].unique()))
 
