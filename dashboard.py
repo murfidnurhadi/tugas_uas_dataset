@@ -3,22 +3,16 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 
+
 st.set_page_config(layout="wide", page_title="E-Commerce Dashboard", page_icon="🛒")
 
 # Load Data
 @st.cache_data
 def load_data():
-    url_base = "https://drive.google.com/uc?id="  # Ganti dengan ID file di Google Drive
+    url_base = "https://drive.google.com/uc?id=" 
     files = {
         "customers": "ID_CUSTOMERS",
-        "geolocation": "ID_GEOLOCATION",
-        "order_items": "ID_ORDER_ITEMS",
-        "order_payments": "ID_ORDER_PAYMENTS",
-        "order_reviews": "ID_ORDER_REVIEWS",
-        "orders": "ID_ORDERS",
-        "product_translation": "ID_PRODUCT_TRANSLATION",
-        "products": "ID_PRODUCTS",
-        "sellers": "ID_SELLERS"
+        "orders": "ID_ORDERS"
     }
 
     dataframes = {}
@@ -29,7 +23,15 @@ def load_data():
     return dataframes
 
 data = load_data()
-st.write(data["customers"].head())  # Contoh menampilkan data customers
+
+# Pastikan indentasi benar
+city_df = data["orders"].merge(
+    data["customers"][['customer_id', 'customer_city']], 
+    on='customer_id', 
+    how='left'
+)
+
+st.write(city_df.head())
     
     # Merge untuk analisis kota
     city_df = orders_df.merge(customers_df[['customer_id', 'customer_city']], on='customer_id', how='left')
