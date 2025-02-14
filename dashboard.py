@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import gdown
 
-pd.read_csv("https://raw.githubusercontent.com/murfidnurhadi/tugas_uas_dataset/main/E-commerce-public-dataset/customers_dataset.csv")
 st.set_page_config(layout="wide", page_title="E-Commerce Dashboard", page_icon="🛒")
 
 # Fungsi untuk mengunduh file dari Google Drive menggunakan gdown
@@ -29,14 +28,21 @@ def load_data():
     dataframes = {}
     for key, file_id in file_ids.items():
         output = f"{key}.csv"
-        dataframes[key] = download_csv_from_drive(file_id, output)
+        try:
+            dataframes[key] = download_csv_from_drive(file_id, output)
+        except Exception as e:
+            st.error(f"Gagal mengunduh {key}: {e}")
 
-    # Merge data yang diperlukan
-    city_df = dataframes["orders"].merge(
-        dataframes["customers"][['customer_id', 'customer_city']], 
-        on='customer_id', 
-        how='left'
-    )
+    # Pastikan kolom 'customer_id' ada sebelum merge
+    if "customer_id" in dataframes["orders"].columns and "customer_id" in dataframes["customers"].columns:
+        city_df = dataframes["orders"].merge(
+            dataframes["customers"][['customer_id', 'customer_city']], 
+            on='customer_id', 
+            how='left'
+        )
+    else:
+        st.error("Kolom 'customer_id' tidak ditemukan dalam dataset orders atau customers")
+        city_df = pd.DataFrame()
 
     payments_with_orders = pd.merge(
         dataframes["order_payments"], 
@@ -72,7 +78,6 @@ def load_data():
 
 # Tampilkan contoh data
 st.write(city_df.head())
-
 
 # Sidebar
 with st.sidebar:
