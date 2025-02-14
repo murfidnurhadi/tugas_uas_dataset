@@ -1,30 +1,34 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-import plotly.express as px
+import gdown
 
 st.set_page_config(layout="wide", page_title="E-Commerce Dashboard", page_icon="🛒")
 
-# Load Data
+# Fungsi untuk mengunduh file dari Google Drive menggunakan gdown
+def download_csv_from_drive(file_id, output):
+    url = f"https://drive.google.com/uc?id={file_id}"
+    gdown.download(url, output, quiet=False)
+    return pd.read_csv(output)
+
+# Fungsi untuk memuat data
 @st.cache_data
 def load_data():
-    url_base = "https://drive.google.com/uc?id="  
-    files = {
-        "customers": "ID_ASLI_CUSTOMERS",
-        "orders": "ID_ASLI_ORDERS",
-        "order_items": "ID_ASLI_ORDER_ITEMS",
-        "order_payments": "ID_ASLI_ORDER_PAYMENTS",
-        "order_reviews": "ID_ASLI_ORDER_REVIEWS",
-        "products": "ID_ASLI_PRODUCTS",
-        "product_translation": "ID_ASLI_PRODUCT_TRANSLATION",
-        "geolocation": "ID_ASLI_GEOLOCATION",
-        "sellers": "ID_ASLI_SELLERS"
+    file_ids = {
+        "customers": "1VAOSa_sNZV4-MJHEEvmgR2mpDoopK45q",
+        "orders": "1nxEALRdWBAz-lFgVlVnC2UthLPvtlA_y",
+        "order_items": "1XKcA-hNGB9YCbDNAAdBQxvDL3IcoQrXY",
+        "order_payments": "1io5sO6SzpHNTY-YqllDS8KNN0n6PwTqk",
+        "order_reviews": "1ym5Xjq_a82D-dH195oImEaiQ5IxJB8Ot",
+        "products": "1CNR0MuaZU77tMeucFcDBcFNx0dQQ6Ouk",
+        "product_translation": "1CaUQEkqmBM_QuMbIfbxq-9dQsPv235to",
+        "geolocation": "1WhheFic-yVYvpMeccK30NebIhtfGIdUu",
+        "sellers": "1-5DduW0uWk4NfcXxL3FjnuuxCZEHWSoL"
     }
 
     dataframes = {}
-    for key, file_id in files.items():
-        url = f"{url_base}{file_id}"
-        dataframes[key] = pd.read_csv(url)
+    for key, file_id in file_ids.items():
+        output = f"{key}.csv"
+        dataframes[key] = download_csv_from_drive(file_id, output)
 
     # Merge data yang diperlukan
     city_df = dataframes["orders"].merge(
@@ -67,6 +71,7 @@ def load_data():
 
 # Tampilkan contoh data
 st.write(city_df.head())
+
 
 # Sidebar
 with st.sidebar:
