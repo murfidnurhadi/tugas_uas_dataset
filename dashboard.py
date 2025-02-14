@@ -8,10 +8,17 @@ st.set_page_config(layout="wide", page_title="E-Commerce Dashboard", page_icon="
 # Load Data
 @st.cache_data
 def load_data():
-    url_base = "https://drive.google.com/uc?id="  # Ganti dengan ID file di Google Drive
+    url_base = "https://drive.google.com/uc?id="  
     files = {
-        "customers": "ID_CUSTOMERS",
-        "orders": "ID_ORDERS"
+        "customers": "ID_ASLI_CUSTOMERS",
+        "orders": "ID_ASLI_ORDERS",
+        "order_items": "ID_ASLI_ORDER_ITEMS",
+        "order_payments": "ID_ASLI_ORDER_PAYMENTS",
+        "order_reviews": "ID_ASLI_ORDER_REVIEWS",
+        "products": "ID_ASLI_PRODUCTS",
+        "product_translation": "ID_ASLI_PRODUCT_TRANSLATION",
+        "geolocation": "ID_ASLI_GEOLOCATION",
+        "sellers": "ID_ASLI_SELLERS"
     }
 
     dataframes = {}
@@ -19,30 +26,47 @@ def load_data():
         url = f"{url_base}{file_id}"
         dataframes[key] = pd.read_csv(url)
 
-    return dataframes
+    # Merge data yang diperlukan
+    city_df = dataframes["orders"].merge(
+        dataframes["customers"][['customer_id', 'customer_city']], 
+        on='customer_id', 
+        how='left'
+    )
 
-data = load_data()
+    payments_with_orders = pd.merge(
+        dataframes["order_payments"], 
+        dataframes["orders"], 
+        on="order_id", 
+        how="inner"
+    )
 
-# Pastikan indentasi benar
-city_df = data["orders"].merge(
-    data["customers"][['customer_id', 'customer_city']], 
-    on='customer_id', 
-    how='left'
-)
-
-st.write(city_df.head())
-    
-    # Merge untuk analisis kota
-    city_df = orders_df.merge(customers_df[['customer_id', 'customer_city']], on='customer_id', how='left')
-    payments_with_orders = pd.merge(order_payments_df, orders_df, on="order_id", how="inner")
-
-    total_payment_type = order_payments_df.groupby('payment_type', as_index=False)['payment_value'].sum()
+    total_payment_type = dataframes["order_payments"].groupby('payment_type', as_index=False)['payment_value'].sum()
     total_payment_type['payment_value_million'] = total_payment_type['payment_value'] / 1e6
-    
-    return (merged_df, city_df, orders_df, products_df, order_items_df, product_translation_df, payments_with_orders, order_reviews_df, order_payments_df, geolocation_df, total_payment_type, customers_df, sellers_df, products_df)
+
+    return (
+        dataframes["orders"],
+        dataframes["customers"],
+        dataframes["order_items"],
+        dataframes["order_payments"],
+        dataframes["order_reviews"],
+        dataframes["products"],
+        dataframes["product_translation"],
+        dataframes["geolocation"],
+        dataframes["sellers"],
+        city_df,
+        payments_with_orders,
+        total_payment_type
+    )
 
 # Load dataset
-datasets=(merged_df, city_df, orders_df, products_df, order_items_df, product_translation_df, payments_with_orders, order_reviews_df, order_payments_df, geolocation_df, total_payment_type, customers_df, sellers_df, products_df) = load_data()
+(
+    orders_df, customers_df, order_items_df, order_payments_df, order_reviews_df,
+    products_df, product_translation_df, geolocation_df, sellers_df, city_df,
+    payments_with_orders, total_payment_type
+) = load_data()
+
+# Tampilkan contoh data
+st.write(city_df.head())
 
 # Sidebar
 with st.sidebar:
