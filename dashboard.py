@@ -75,7 +75,7 @@ st.write(city_df.head())
 
 # Sidebar
 with st.sidebar:
-    st.image("C:/UNIKOM 10123034/UNIKOM 3/Pemrograman Dasar Sains Data/Pertemuan 15/Images/logo-unikom.png", width=260)
+    st.image("https://raw.githubusercontent.com/murfidnurhadi/tugas_uas_dataset/main/Images/logo-unikom.jpg", width=260)
     st.markdown("""
     **Kelompok 4**  
     **Anggota:**  
