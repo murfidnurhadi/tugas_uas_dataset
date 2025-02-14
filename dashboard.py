@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import gdown
 
+pd.read_csv("https://raw.githubusercontent.com/murfidnurhadi/tugas_uas_dataset/main/E-commerce-public-dataset/customers_dataset.csv")
 st.set_page_config(layout="wide", page_title="E-Commerce Dashboard", page_icon="🛒")
 
 # Fungsi untuk mengunduh file dari Google Drive menggunakan gdown
