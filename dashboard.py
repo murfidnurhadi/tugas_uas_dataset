@@ -3,62 +3,44 @@ import plotly.express as px
 import pandas as pd
 import gdown
 
-# Judul Aplikasi
-st.title("Dashboard Analisis Data")
+# Daftar URL Google Drive
+file_urls = {
+    "sellers": "https://drive.google.com/uc?id=1-5DduW0uWk4NfcXxL3FjnuuxCZEHWSoL",
+    "products": "https://drive.google.com/uc?id=1CNR0MuaZU77tMeucFcDBcFNx0dQQ6Ouk",
+    "product_category": "https://drive.google.com/uc?id=1CaUQEkqmBM_QuMbIfbxq-9dQsPv235to",
+    "orders": "https://drive.google.com/uc?id=1nxEALRdWBAz-lFgVlVnC2UthLPvtlA_y",
+    "order_reviews": "https://drive.google.com/uc?id=1ym5Xjq_a82D-dH195oImEaiQ5IxJB8Ot",
+    "order_payments": "https://drive.google.com/uc?id=1io5sO6SzpHNTY-YqllDS8KNN0n6PwTqk",
+    "order_items": "https://drive.google.com/uc?id=1XKcA-hNGB9YCbDNAAdBQxvDL3IcoQrXY",
+    "geolocation": "https://drive.google.com/uc?id=1WhheFic-yVYvpMeccK30NebIhtfGIdUu",
+    "customers": "https://drive.google.com/uc?id=1VAOSa_sNZV4-MJHEEvmgR2mpDoopK45q"
+}
 
-# Upload File CSV
-uploaded_file = st.sidebar.file_uploader("Upload file CSV", type=["csv"])
-
-# Jika file diunggah
-if uploaded_file is not None:
+# Fungsi untuk mendownload CSV dari Google Drive
+@st.cache_data
+def load_csv(url):
     try:
-        # Membaca dataset
-        df = pd.read_csv(uploaded_file)
-
-        # Tampilkan preview dataset
-        st.write("Preview Dataset:")
-        st.write(df.head())
-
-        # Pastikan dataset memiliki kolom yang dibutuhkan
-        required_columns = ['id', 'year']
-        missing_cols = [col for col in required_columns if col not in df.columns]
-        
-        if missing_cols:
-            st.error(f"Kolom berikut tidak ditemukan dalam dataset: {missing_cols}")
-            st.stop()
-
-        # Contoh pengolahan data
-        # Misalkan ada dataset lain untuk digabungkan
-        df2 = pd.DataFrame({'id': df['id'], 'value': range(len(df))})  # Dummy dataset
-        
-        # Menggabungkan dataset
-        merged_df = pd.merge(df, df2, on='id', how='outer')
-
-        # Cek apakah `merged_df` kosong
-        if merged_df.empty:
-            st.warning("Dataset kosong setelah penggabungan!")
-            st.stop()
-
-        # Pastikan kolom `year` ada
-        if 'year' not in merged_df.columns:
-            st.error("Kolom 'year' tidak ditemukan dalam dataset!")
-            st.stop()
-
-        # Pilih Tahun dari Sidebar
-        year_selected = st.sidebar.selectbox("Pilih Tahun", merged_df['year'].unique())
-
-        # Filter data berdasarkan tahun yang dipilih
-        filtered_df = merged_df[merged_df['year'] == year_selected]
-
-        # Menampilkan data yang difilter
-        st.write(f"Data untuk Tahun {year_selected}:")
-        st.write(filtered_df)
-
+        return pd.read_csv(url)
     except Exception as e:
-        st.error(f"Terjadi kesalahan dalam memproses file: {e}")
+        st.error(f"Error membaca dataset dari {url}: {e}")
+        return None
 
-else:
-    st.info("Silakan unggah file CSV untuk memulai analisis.")
+# Memuat dataset dari Google Drive
+st.title("Dashboard Analisis Data dari Google Drive")
+
+# Pilihan Dataset
+dataset_option = st.sidebar.selectbox(
+    "Pilih Dataset",
+    list(file_urls.keys())
+)
+
+# Load dataset yang dipilih
+df = load_csv(file_urls[dataset_option])
+
+if df is not None:
+    st.write(f"### Dataset: {dataset_option}")
+    st.write(df.head())  # Menampilkan 5 data teratas
+
 
 # Sidebar
 with st.sidebar:
