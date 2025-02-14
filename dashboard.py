@@ -3,13 +3,12 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 
-
 st.set_page_config(layout="wide", page_title="E-Commerce Dashboard", page_icon="🛒")
 
 # Load Data
 @st.cache_data
 def load_data():
-    url_base = "https://drive.google.com/uc?id=" 
+    url_base = "https://drive.google.com/uc?id="  # Ganti dengan ID file di Google Drive
     files = {
         "customers": "ID_CUSTOMERS",
         "orders": "ID_ORDERS"
