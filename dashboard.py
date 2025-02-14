@@ -3,82 +3,62 @@ import plotly.express as px
 import pandas as pd
 import gdown
 
-st.set_page_config(layout="wide", page_title="E-Commerce Dashboard", page_icon="🛒")
+# Judul Aplikasi
+st.title("Dashboard Analisis Data")
 
-# Fungsi untuk mengunduh file dari Google Drive menggunakan gdown
-def download_csv_from_drive(file_id, output):
-    url = f"https://drive.google.com/uc?id={file_id}"
-    gdown.download(url, output, quiet=False)
-    return pd.read_csv(output)
+# Upload File CSV
+uploaded_file = st.sidebar.file_uploader("Upload file CSV", type=["csv"])
 
-# Fungsi untuk memuat data
-@st.cache_data
-def load_data():
-    file_ids = {
-        "customers": "1VAOSa_sNZV4-MJHEEvmgR2mpDoopK45q",
-        "orders": "1nxEALRdWBAz-lFgVlVnC2UthLPvtlA_y",
-        "order_items": "1XKcA-hNGB9YCbDNAAdBQxvDL3IcoQrXY",
-        "order_payments": "1io5sO6SzpHNTY-YqllDS8KNN0n6PwTqk",
-        "order_reviews": "1ym5Xjq_a82D-dH195oImEaiQ5IxJB8Ot",
-        "products": "1CNR0MuaZU77tMeucFcDBcFNx0dQQ6Ouk",
-        "product_translation": "1CaUQEkqmBM_QuMbIfbxq-9dQsPv235to",
-        "geolocation": "1WhheFic-yVYvpMeccK30NebIhtfGIdUu",
-        "sellers": "1-5DduW0uWk4NfcXxL3FjnuuxCZEHWSoL"
-    }
+# Jika file diunggah
+if uploaded_file is not None:
+    try:
+        # Membaca dataset
+        df = pd.read_csv(uploaded_file)
 
-    dataframes = {}
-    for key, file_id in file_ids.items():
-        output = f"{key}.csv"
-        try:
-            dataframes[key] = download_csv_from_drive(file_id, output)
-        except Exception as e:
-            st.error(f"Gagal mengunduh {key}: {e}")
+        # Tampilkan preview dataset
+        st.write("Preview Dataset:")
+        st.write(df.head())
 
-    # Pastikan kolom 'customer_id' ada sebelum merge
-    if "customer_id" in dataframes["orders"].columns and "customer_id" in dataframes["customers"].columns:
-        city_df = dataframes["orders"].merge(
-            dataframes["customers"][['customer_id', 'customer_city']], 
-            on='customer_id', 
-            how='left'
-        )
-    else:
-        st.error("Kolom 'customer_id' tidak ditemukan dalam dataset orders atau customers")
-        city_df = pd.DataFrame()
+        # Pastikan dataset memiliki kolom yang dibutuhkan
+        required_columns = ['id', 'year']
+        missing_cols = [col for col in required_columns if col not in df.columns]
+        
+        if missing_cols:
+            st.error(f"Kolom berikut tidak ditemukan dalam dataset: {missing_cols}")
+            st.stop()
 
-    payments_with_orders = pd.merge(
-        dataframes["order_payments"], 
-        dataframes["orders"], 
-        on="order_id", 
-        how="inner"
-    )
+        # Contoh pengolahan data
+        # Misalkan ada dataset lain untuk digabungkan
+        df2 = pd.DataFrame({'id': df['id'], 'value': range(len(df))})  # Dummy dataset
+        
+        # Menggabungkan dataset
+        merged_df = pd.merge(df, df2, on='id', how='outer')
 
-    total_payment_type = dataframes["order_payments"].groupby('payment_type', as_index=False)['payment_value'].sum()
-    total_payment_type['payment_value_million'] = total_payment_type['payment_value'] / 1e6
+        # Cek apakah `merged_df` kosong
+        if merged_df.empty:
+            st.warning("Dataset kosong setelah penggabungan!")
+            st.stop()
 
-    return (
-        dataframes["orders"],
-        dataframes["customers"],
-        dataframes["order_items"],
-        dataframes["order_payments"],
-        dataframes["order_reviews"],
-        dataframes["products"],
-        dataframes["product_translation"],
-        dataframes["geolocation"],
-        dataframes["sellers"],
-        city_df,
-        payments_with_orders,
-        total_payment_type
-    )
+        # Pastikan kolom `year` ada
+        if 'year' not in merged_df.columns:
+            st.error("Kolom 'year' tidak ditemukan dalam dataset!")
+            st.stop()
 
-# Load dataset
-(
-    orders_df, customers_df, order_items_df, order_payments_df, order_reviews_df,
-    products_df, product_translation_df, geolocation_df, sellers_df, city_df,
-    payments_with_orders, total_payment_type
-) = load_data()
+        # Pilih Tahun dari Sidebar
+        year_selected = st.sidebar.selectbox("Pilih Tahun", merged_df['year'].unique())
 
-# Tampilkan contoh data
-st.write(city_df.head())
+        # Filter data berdasarkan tahun yang dipilih
+        filtered_df = merged_df[merged_df['year'] == year_selected]
+
+        # Menampilkan data yang difilter
+        st.write(f"Data untuk Tahun {year_selected}:")
+        st.write(filtered_df)
+
+    except Exception as e:
+        st.error(f"Terjadi kesalahan dalam memproses file: {e}")
+
+else:
+    st.info("Silakan unggah file CSV untuk memulai analisis.")
 
 # Sidebar
 with st.sidebar:
